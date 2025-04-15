@@ -25,9 +25,20 @@ def get_followers(ig_user_id):
     return res.get("followers_count", 0)
 
 def get_media(ig_user_id):
-    url = f"{GRAPH_API}/{ig_user_id}/media?fields=id,media_type,media_product_type,timestamp&limit=100&access_token={ACCESS_TOKEN}"
-    res = requests.get(url).json()
-    return res.get("data", [])
+    print("📊 Recupero lista post...")
+    media = []
+    url = f"{GRAPH_API}/{ig_user_id}/media?fields=id,timestamp&limit=100&access_token={ACCESS_TOKEN}"
+
+    while url:
+        res = requests.get(url).json()
+        data = res.get("data", [])
+        media.extend(data)
+
+        # Check for pagination
+        paging = res.get("paging", {}).get("next")
+        url = paging if paging else None
+
+    return media
 
 def get_media_metrics(media_id):
     url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"

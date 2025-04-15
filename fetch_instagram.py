@@ -1,8 +1,9 @@
 import requests
 import json
 import os
+from datetime import datetime, timedelta  # <-- IMPORT NUOVO
 
-print("\n🔧 Codice versione 6.2 in esecuzione...")
+print("\n🔧 Codice versione 6.3 in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 PAGE_ID = os.environ.get("FB_PAGE_ID")
@@ -79,6 +80,7 @@ likes = []
 comments = []
 views = []
 valid_posts = 0
+timestamps = []
 
 print("🔢 Calcolo metriche da post...")
 for media in media_items:
@@ -90,6 +92,7 @@ for media in media_items:
             likes.append(like)
             comments.append(comment)
             views.append(reach)
+            timestamps.append(media["timestamp"])
             valid_posts += 1
     except Exception as e:
         print(f"⚠️ Errore media {media_id}: {e}")
@@ -99,17 +102,28 @@ print(f"🔍 Prime 10 views: {views[:10]}")
 
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
+
+# 📉 Engagement rate per post / reach
 engagement_rates = []
 for like, comment, reach in zip(likes, comments, views):
     if reach > 0:
         post_engagement = ((like + comment) / reach) * 100
         engagement_rates.append(post_engagement)
-
 engagement_rate = round(sum(engagement_rates) / len(engagement_rates), 2) if engagement_rates else 0
+
+# 📊 Media reach degli ultimi 30 post
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
+
+# 🗓️ Daily reach ultimi 28 giorni
+cutoff_date = datetime.now().astimezone() - timedelta(days=28)
+recent_reach = [
+    reach for ts, reach in zip(timestamps, views)
+    if datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z") > cutoff_date
+]
+average_daily_reach = round(sum(recent_reach) / 28) if recent_reach else 0
+
 total_impressions = sum(views)
-daily_reach = "1.4m"
 
 print("📝 Salvataggio delle statistiche in stats.json...")
 data = {
@@ -120,7 +134,7 @@ data = {
     "avg_comments": avg_comments,
     "engagement_rate": f"{engagement_rate}%",
     "avg_reach": avg_reach,
-    "daily_reach": daily_reach,
+    "daily_reach": average_daily_reach,  # ✅ ora calcolato
     "total_impressions": total_impressions
 }
 

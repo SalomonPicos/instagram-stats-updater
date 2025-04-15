@@ -2,14 +2,13 @@ import requests
 import json
 import os
 
-print("\n🔧 Codice versione 5.0 in esecuzione...")
+print("\n🔧 Codice versione 5.1 in esecuzione...")
 
-ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # su Render
-PAGE_ID = os.environ.get("FB_PAGE_ID")            # su Render
+ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
+PAGE_ID = os.environ.get("FB_PAGE_ID")
 USERNAME = "salomonpicos"
 GRAPH_API = "https://graph.facebook.com/v19.0"
 
-# Recupera ID dell'account IG Creator collegato alla pagina
 def get_ig_user_id():
     print("🔗 Recupero ID account Instagram collegato...")
     url = f"{GRAPH_API}/{PAGE_ID}?fields=instagram_business_account&access_token={ACCESS_TOKEN}"
@@ -51,7 +50,6 @@ def get_media_metrics(media_id):
         elif metric.get("name") == "video_views":
             views = metric.get("values", [{}])[0].get("value", 0)
 
-    # Fallback: se impressions è 0 ma ci sono views, usiamo views
     if impressions == 0:
         impressions = views
 
@@ -90,19 +88,19 @@ for media in media_items:
     except Exception as e:
         print(f"⚠️ Errore media {media_id}: {e}")
 
-# Calcoli finali
+# DEBUG
+print(f"🪵 Views totali trovate: {len([v for v in views if v > 0])} su {len(views)} post")
+print(f"🔍 Prime 10 views: {views[:10]}")
+
+# Calcoli
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
 engagement_rate = round(((avg_likes + avg_comments) / followers) * 100, 2) if followers else 0
 
-# Average reach (ultimi 30 video)
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
 
-# Total impressions = somma views
 total_impressions = sum(views)
-
-# Daily reach statico
 daily_reach = "1.4m"
 
 print("📝 Salvataggio delle statistiche in stats.json...")

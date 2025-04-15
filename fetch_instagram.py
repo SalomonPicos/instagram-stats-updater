@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-print("\n🔧 Codice versione 4.0 in esecuzione...")
+print("\n🔧 Codice versione 5.0 in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # su Render
 PAGE_ID = os.environ.get("FB_PAGE_ID")            # su Render
@@ -10,7 +10,6 @@ USERNAME = "salomonpicos"
 GRAPH_API = "https://graph.facebook.com/v19.0"
 
 # Recupera ID dell'account IG Creator collegato alla pagina
-
 def get_ig_user_id():
     print("🔗 Recupero ID account Instagram collegato...")
     url = f"{GRAPH_API}/{PAGE_ID}?fields=instagram_business_account&access_token={ACCESS_TOKEN}"
@@ -22,18 +21,15 @@ def get_ig_user_id():
         return None
     return ig_account
 
-
 def get_followers(ig_user_id):
     url = f"{GRAPH_API}/{ig_user_id}?fields=followers_count&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
     return res.get("followers_count", 0)
 
-
 def get_media(ig_user_id):
     url = f"{GRAPH_API}/{ig_user_id}/media?fields=id,timestamp&limit=100&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
     return res.get("data", [])
-
 
 def get_media_metrics(media_id):
     url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type,insights.metric(reach,impressions,video_views)&access_token={ACCESS_TOKEN}"
@@ -55,9 +51,13 @@ def get_media_metrics(media_id):
         elif metric.get("name") == "video_views":
             views = metric.get("values", [{}])[0].get("value", 0)
 
+    # Fallback: se impressions è 0 ma ci sono views, usiamo views
+    if impressions == 0:
+        impressions = views
+
     return like_count, comment_count, reach, impressions, views
 
-
+# INIZIO
 print("📥 Inizio fetch...")
 
 ig_user_id = get_ig_user_id()
@@ -85,24 +85,25 @@ for media in media_items:
         likes.append(like)
         comments.append(comment)
         reaches.append(reach)
-        impressions.append(impression or view)
+        impressions.append(impression)
         views.append(view)
     except Exception as e:
         print(f"⚠️ Errore media {media_id}: {e}")
 
+# Calcoli finali
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
 engagement_rate = round(((avg_likes + avg_comments) / followers) * 100, 2) if followers else 0
 
-# Usa i dati degli ultimi 30 video per calcolare la reach media
+# Average reach (ultimi 30 video)
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
 
-# Usa i dati di tutti i post per stimare le impressioni totali
-total_impressions = sum(impressions)
+# Total impressions = somma views
+total_impressions = sum(views)
 
-print("🕜 Recupero daily reach...")
-daily_reach = "1.4m"  # temporaneo
+# Daily reach statico
+daily_reach = "1.4m"
 
 print("📝 Salvataggio delle statistiche in stats.json...")
 data = {

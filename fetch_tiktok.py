@@ -15,65 +15,67 @@ USERNAME = "salomonpicos"
 if not ms_token:
     raise EnvironmentError("TIKTOK_TOKEN non definito nelle variabili ambiente")
 
-with TikTokApi(ms_token=ms_token, use_test_endpoints=True) as api:
-    try:
-        user = api.user(username=USERNAME)
-        videos = user.videos(count=100)
+try:
+    api = TikTokApi.get_instance()
+    api.ms_token = ms_token
 
-        print(f"📦 Trovati {len(videos)} video pubblici per {USERNAME}")
+    user = api.user(username=USERNAME)
+    videos = user.videos(count=100)
 
-        followers = user.info_full()["userInfo"]["stats"]["followerCount"]
-        print(f"👥 Followers: {followers}")
+    print(f"📦 Trovati {len(videos)} video pubblici per {USERNAME}")
 
-        total_views, total_likes, total_comments = 0, 0, 0
-        daily_views = []
-        views_last_28d = 0
-        now = datetime.now()
+    followers = user.info_full()["userInfo"]["stats"]["followerCount"]
+    print(f"👥 Followers: {followers}")
 
-        for video in videos:
-            stats = video.as_dict["stats"]
-            create_time = datetime.fromtimestamp(video.as_dict["createTime"])
+    total_views, total_likes, total_comments = 0, 0, 0
+    daily_views = []
+    views_last_28d = 0
+    now = datetime.now()
 
-            views = stats["playCount"]
-            likes = stats["diggCount"]
-            comments = stats["commentCount"]
+    for video in videos:
+        stats = video.as_dict["stats"]
+        create_time = datetime.fromtimestamp(video.as_dict["createTime"])
 
-            total_views += views
-            total_likes += likes
-            total_comments += comments
+        views = stats["playCount"]
+        likes = stats["diggCount"]
+        comments = stats["commentCount"]
 
-            if now - create_time <= timedelta(days=28):
-                views_last_28d += views
-                daily_views.append((create_time.date(), views))
+        total_views += views
+        total_likes += likes
+        total_comments += comments
 
-        total_posts = len(videos)
-        avg_views = round(total_views / total_posts, 1) if total_posts else 0
-        avg_likes = round(total_likes / total_posts, 1) if total_posts else 0
-        avg_comments = round(total_comments / total_posts, 1) if total_posts else 0
+        if now - create_time <= timedelta(days=28):
+            views_last_28d += views
+            daily_views.append((create_time.date(), views))
 
-        engagement_rate = 0
-        if total_views > 0:
-            engagement_rate = round(((total_likes + total_comments) / total_views) * 100, 2)
+    total_posts = len(videos)
+    avg_views = round(total_views / total_posts, 1) if total_posts else 0
+    avg_likes = round(total_likes / total_posts, 1) if total_posts else 0
+    avg_comments = round(total_comments / total_posts, 1) if total_posts else 0
 
-        avg_daily_views = round(views_last_28d / 28) if views_last_28d else 0
+    engagement_rate = 0
+    if total_views > 0:
+        engagement_rate = round(((total_likes + total_comments) / total_views) * 100, 2)
 
-        stats = {
-            "username": USERNAME,
-            "followers": followers,
-            "posts": total_posts,
-            "avg_views": avg_views,
-            "avg_likes": avg_likes,
-            "avg_comments": avg_comments,
-            "engagement_rate": f"{engagement_rate}%",
-            "daily_views": avg_daily_views,
-            "total_views": total_views,
-            "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
+    avg_daily_views = round(views_last_28d / 28) if views_last_28d else 0
 
-        with open("tiktok_stats.json", "w") as f:
-            json.dump(stats, f, indent=2)
+    stats = {
+        "username": USERNAME,
+        "followers": followers,
+        "posts": total_posts,
+        "avg_views": avg_views,
+        "avg_likes": avg_likes,
+        "avg_comments": avg_comments,
+        "engagement_rate": f"{engagement_rate}%",
+        "daily_views": avg_daily_views,
+        "total_views": total_views,
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
 
-        print("✅ Statistiche salvate in tiktok_stats.json")
+    with open("tiktok_stats.json", "w") as f:
+        json.dump(stats, f, indent=2)
 
-    except Exception as e:
-        print(f"❌ Errore TikTok API: {e}")
+    print("✅ Statistiche salvate in tiktok_stats.json")
+
+except Exception as e:
+    print(f"❌ Errore TikTok API: {e}")

@@ -18,7 +18,7 @@ if not ms_token:
 
 async def main():
     try:
-        async with TikTokApi() as api:
+        async with TikTokApi(browser="chromium") as api:
             await api.create_sessions(
                 ms_tokens=[ms_token],
                 num_sessions=1,

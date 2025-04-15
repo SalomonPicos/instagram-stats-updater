@@ -16,7 +16,8 @@ if not ms_token:
     raise EnvironmentError("TIKTOK_TOKEN non definito nelle variabili ambiente")
 
 try:
-    api = TikTokApi(ms_token=ms_token)
+    api = TikTokApi.get_instance()
+    api.ms_token = ms_token
 
     user = api.user(username=USERNAME)
     videos = user.videos(count=100)

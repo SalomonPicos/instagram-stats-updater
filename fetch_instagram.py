@@ -3,8 +3,8 @@ import json
 import os
 from datetime import datetime
 
-# Codice versione 1.0
-print("🔧 Codice versione 1.0 in esecuzione...")
+# Codice versione 1.1
+print("🔧 Codice versione 1.1 in esecuzione...")
 
 # Ottieni il token di accesso Instagram e il business ID da variabili di ambiente
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # accesso tramite secret

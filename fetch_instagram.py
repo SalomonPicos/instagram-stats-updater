@@ -44,8 +44,15 @@ for media_id in media_ids:
         like_total += fields_data.get("like_count", 0)
         comment_total += fields_data.get("comments_count", 0)
 
-        reach_val = insights_data["data"][0]["values"][0]["value"]
-        impressions_val = insights_data["data"][1]["values"][0]["value"]
+        if "data" in insights_data and len(insights_data["data"]) >= 2:
+            reach_val = insights_data["data"][0]["values"][0]["value"]
+            impressions_val = insights_data["data"][1]["values"][0]["value"]
+            reach_total += reach_val
+            impressions_total += impressions_val
+            post_count += 1
+        else:
+            print(f"⚠️ Skipping media {media_id}: no insights available.")
+
 
         reach_total += reach_val
         impressions_total += impressions_val

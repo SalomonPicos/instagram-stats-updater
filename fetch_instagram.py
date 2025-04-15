@@ -1,6 +1,3 @@
-from pathlib import Path
-
-script_code = """
 import requests
 import json
 import os
@@ -117,4 +114,3 @@ os.system("git add stats.json")
 os.system("git commit -m 'update all stats'")
 os.system("git push origin main")
 print("🚀 Done!")
-"""

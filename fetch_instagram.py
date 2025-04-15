@@ -3,12 +3,13 @@ import json
 import os
 from datetime import datetime
 
-# Aggiungi il messaggio di debug per la versione del codice
-print("🔧 Codice versione 22 in esecuzione...")
+# Codice versione 1.0
+print("🔧 Codice versione 1.0 in esecuzione...")
 
-ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # imposta su Render come Secret
-BUSINESS_ACCOUNT_ID = os.environ.get("IG_BUSINESS_ID")  # imposta su Render come Secret
-USERNAME = "salomonpicos"
+# Ottieni il token di accesso Instagram e il business ID da variabili di ambiente
+ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # accesso tramite secret
+BUSINESS_ACCOUNT_ID = os.environ.get("IG_BUSINESS_ID")  # accesso tramite secret
+USERNAME = "salomonpicos"  # Modifica con il tuo username Instagram
 GRAPH_API = "https://graph.facebook.com/v19.0"
 
 # Configura l'utente git per il commit

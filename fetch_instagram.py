@@ -87,6 +87,7 @@ data = {
 with open("stats.json", "r") as f:
     current_data = json.load(f)
 
+# Se i dati sono cambiati, aggiorna e fai il commit
 if current_data != data:  # Se i dati sono cambiati
     print("📂 stats.json aggiornato.")
     with open("stats.json", "w") as f:

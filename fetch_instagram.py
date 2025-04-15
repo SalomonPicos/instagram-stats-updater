@@ -37,17 +37,15 @@ def get_media_metrics(media_id, media_type):
     comment_count = res.get("comments_count", 0)
 
     views = 0
+    insights_url = f"{GRAPH_API}/{media_id}/insights?metric=impressions&access_token={ACCESS_TOKEN}"
+    insights = requests.get(insights_url).json()
 
-    if media_type == "REEL":
-        insights_url = f"{GRAPH_API}/{media_id}/insights?metric=ig_reels_aggregated_all_plays_count&access_token={ACCESS_TOKEN}"
-        insights = requests.get(insights_url).json()
-
-        if "data" in insights:
-            for item in insights["data"]:
-                if item.get("name") == "ig_reels_aggregated_all_plays_count":
-                    views = item.get("values", [{}])[0].get("value", 0)
-        else:
-            print(f"⚠️ Nessun insight plays per media {media_id}: {insights}")
+    if "data" in insights:
+        for item in insights["data"]:
+            if item.get("name") == "impressions":
+                views = item.get("values", [{}])[0].get("value", 0)
+    else:
+        print(f"⚠️ Nessun insight impressions per media {media_id}: {insights}")
 
     return like_count, comment_count, views
 

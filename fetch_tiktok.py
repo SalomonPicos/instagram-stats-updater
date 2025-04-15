@@ -1,4 +1,4 @@
-# fetch_tiktok.py
+# fetch_tiktok.py (minimal test)
 import os
 import asyncio
 from TikTokApi import TikTokApi
@@ -21,7 +21,7 @@ async def main():
                 ms_tokens=[ms_token],
                 num_sessions=1,
                 sleep_after=3,
-                headless=False,
+                headless=True,
                 browser_type="webkit"
             )
 

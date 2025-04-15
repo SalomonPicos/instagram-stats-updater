@@ -71,7 +71,6 @@ avg_reach = round(sum(reaches) / len(reaches), 1) if reaches else 0
 print("🕜 Recupero daily reach...")
 daily_reach = "1.4m"  # per ora lasciamo fisso, si aggiornerà poi da insights totali se necessario
 
-# Dati da salvare in stats.json
 data = {
     "username": USERNAME,
     "followers": followers,
@@ -84,17 +83,21 @@ data = {
     "total_impressions": "20.1m"  # per ora statica
 }
 
-# Salvataggio delle statistiche nel file stats.json
-print("📝 Salvataggio delle statistiche in stats.json...")
-with open("stats.json", "w") as f:
-    json.dump(data, f, indent=2)
-print("✅ Dati salvati in stats.json")
+# Verifica se ci sono modifiche prima di fare il commit
+with open("stats.json", "r") as f:
+    current_data = json.load(f)
 
-# GIT PUSH AUTOMATICO (solo su Render con repo collegato)
-print("📤 Git push in corso...")
-os.system("git config --global user.email 'render@bot.com'")
-os.system("git config --global user.name 'Render Bot'")
-os.system("git add stats.json")
-os.system(f"git commit -m 'update all stats'")
-os.system("git push -f origin HEAD:main")
-print("🚀 Done!")
+if current_data != data:  # Se i dati sono cambiati
+    print("📂 stats.json aggiornato.")
+    with open("stats.json", "w") as f:
+        json.dump(data, f, indent=2)
+
+    print("📤 Git push in corso...")
+    os.system("git config --global user.email 'render@bot.com'")
+    os.system("git config --global user.name 'Render Bot'")
+    os.system("git add stats.json")
+    os.system(f"git commit -m 'update all stats'")
+    os.system("git push -f origin main")
+    print("🚀 Done!")
+else:
+    print("📂 stats.json non modificato. Nessun push necessario.")

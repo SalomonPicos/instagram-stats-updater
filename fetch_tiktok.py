@@ -6,6 +6,10 @@ from datetime import datetime, timedelta
 from TikTokApi import TikTokApi
 from dotenv import load_dotenv
 
+import TikTokApi
+print(f"TikTokApi version: {TikTokApi.__version__}")
+
+
 load_dotenv()
 
 print("\n🔧 fetch_tiktok.py avviato...")

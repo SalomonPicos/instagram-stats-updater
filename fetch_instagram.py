@@ -27,10 +27,10 @@ def get_media_metrics(media_id):
     res = requests.get(url).json()
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
+    media_type = res.get("media_type", "UNKNOWN")
 
-    # Recupera metriche aggiuntive
-    insight_metrics = "reach,impressions,likes,comments,saved,shares,video_views"
-    insights_url = f"{GRAPH_API}/{media_id}/insights?metric={insight_metrics}&access_token={ACCESS_TOKEN}"
+    # Solo reach per evitare errori su tipi non supportati
+    insights_url = f"{GRAPH_API}/{media_id}/insights?metric=reach&access_token={ACCESS_TOKEN}"
     insights = requests.get(insights_url).json()
 
     reach = 0
@@ -38,9 +38,11 @@ def get_media_metrics(media_id):
         for item in insights["data"]:
             if item.get("name") == "reach":
                 reach = item.get("values", [{}])[0].get("value", 0)
-                break
+    else:
+        print(f"❌ Media {media_id} (type: {media_type}) errore insights: {insights}")
 
     return like_count, comment_count, reach
+
 
 
 print("✨ Recupero follower count...")

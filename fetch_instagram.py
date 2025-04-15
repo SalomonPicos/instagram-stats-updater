@@ -92,7 +92,7 @@ data = {
     "avg_likes": avg_likes,
     "avg_comments": avg_comments,
     "engagement_rate": f"{engagement_rate}%",
-    "avg_reach": f"{avg_reach:,}",
+    "avg_reach": avg_reach,
     "daily_reach": daily_reach,
     "total_impressions": total_impressions
 }

@@ -1,9 +1,9 @@
 import requests
 import json
 import os
-from datetime import datetime, timedelta  # <-- IMPORT NUOVO
+from datetime import datetime, timedelta
 
-print("\n🔧 Codice versione 6.3 in esecuzione...")
+print("\n🔧 Codice versione 6.4 in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 PAGE_ID = os.environ.get("FB_PAGE_ID")
@@ -64,13 +64,21 @@ def get_media_metrics(media_id):
 
     return like_count, comment_count, reach
 
-def format_short_number(value):
-    if value >= 1_000_000:
-        return f"{value / 1_000_000:.2f}".rstrip("0").rstrip(".") + "m"
-    elif value >= 1_000:
-        return f"{value / 1_000:.1f}".rstrip("0").rstrip(".") + "k"
-    return str(value)
+def get_account_daily_reach(ig_user_id):
+    since = (datetime.now() - timedelta(days=28)).date().isoformat()
+    until = datetime.now().date().isoformat()
+    url = f"{GRAPH_API}/{ig_user_id}/insights?metric=reach&period=day&since={since}&until={until}&access_token={ACCESS_TOKEN}"
+    res = requests.get(url).json()
 
+    if "data" in res:
+        reach_data = res["data"][0]["values"]
+        total = sum(day.get("value", 0) for day in reach_data)
+        return round(total / 28)
+    else:
+        print(f"⚠️ Errore nel recuperare reach globale: {json.dumps(res)}")
+        return 0
+
+# 🚀 INIZIO
 print("📥 Inizio fetch...")
 
 ig_user_id = get_ig_user_id()
@@ -110,7 +118,6 @@ print(f"🔍 Prime 10 views: {views[:10]}")
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
 
-# 📉 Engagement rate per post / reach
 engagement_rates = []
 for like, comment, reach in zip(likes, comments, views):
     if reach > 0:
@@ -118,19 +125,11 @@ for like, comment, reach in zip(likes, comments, views):
         engagement_rates.append(post_engagement)
 engagement_rate = round(sum(engagement_rates) / len(engagement_rates), 2) if engagement_rates else 0
 
-# 📊 Media reach degli ultimi 30 post
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
 
-# 🗓️ Daily reach ultimi 28 giorni
-cutoff_date = datetime.now().astimezone() - timedelta(days=28)
-recent_reach = [
-    reach for ts, reach in zip(timestamps, views)
-    if datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z") > cutoff_date
-]
-average_daily_reach = round(sum(recent_reach) / 28) if recent_reach else 0
-formatted_daily_reach = format_short_number(average_daily_reach)
-
+# ✅ Daily reach aggiornato con insights globali
+average_daily_reach = get_account_daily_reach(ig_user_id)
 total_impressions = sum(views)
 
 print("📝 Salvataggio delle statistiche in stats.json...")
@@ -142,7 +141,7 @@ data = {
     "avg_comments": avg_comments,
     "engagement_rate": f"{engagement_rate}%",
     "avg_reach": avg_reach,
-    "daily_reach": formatted_daily_reach,  # 👈 ora è in formato k/m
+    "daily_reach": average_daily_reach,
     "total_impressions": total_impressions
 }
 

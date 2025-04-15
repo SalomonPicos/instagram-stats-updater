@@ -118,9 +118,3 @@ os.system("git commit -m 'update all stats'")
 os.system("git push origin main")
 print("🚀 Done!")
 """
-
-# Save to file
-file_path = "/mnt/data/fetch_instagram.py"
-Path(file_path).write_text(script_code)
-
-file_path

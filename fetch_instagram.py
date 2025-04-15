@@ -29,6 +29,9 @@ def get_media():
 def get_media_metrics(media_id):
     url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
+
+    print(f"📥 Media {media_id} response:", res)
+
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
     media_type = res.get("media_type", "UNKNOWN")
@@ -36,6 +39,8 @@ def get_media_metrics(media_id):
     reach = 0
     insights_url = f"{GRAPH_API}/{media_id}/insights?metric=reach&access_token={ACCESS_TOKEN}"
     insights = requests.get(insights_url).json()
+
+    print(f"📊 Insights for {media_id}:", insights)
 
     if "data" in insights and isinstance(insights["data"], list):
         for item in insights["data"]:
@@ -45,6 +50,7 @@ def get_media_metrics(media_id):
         print(f"⚠️ Nessun insight per media {media_id} (type: {media_type}) → Response: {insights}")
 
     return like_count, comment_count, reach
+
 
 print("✨ Recupero follower count...")
 followers = get_followers()

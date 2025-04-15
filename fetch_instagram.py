@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-print("\\n🔧 Codice versione 6.0 in esecuzione...")
+print("\\n🔧 Codice versione 6.1 in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # su Render
 PAGE_ID = os.environ.get("FB_PAGE_ID")            # su Render
@@ -25,31 +25,33 @@ def get_followers(ig_user_id):
     return res.get("followers_count", 0)
 
 def get_media(ig_user_id):
-    url = f"{GRAPH_API}/{ig_user_id}/media?fields=id,timestamp&limit=100&access_token={ACCESS_TOKEN}"
+    url = f"{GRAPH_API}/{ig_user_id}/media?fields=id,media_type,media_product_type,timestamp&limit=100&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
     return res.get("data", [])
 
-def get_media_metrics(media_id):
-    url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"
-    res = requests.get(url).json()
+def get_media_metrics(media_id, media_type):
+    like_count = 0
+    comment_count = 0
+    views = 0
+
+    details_url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count&access_token={ACCESS_TOKEN}"
+    res = requests.get(details_url).json()
 
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
 
-    insights_url = f"{GRAPH_API}/{media_id}/insights?metric=video_views&access_token={ACCESS_TOKEN}"
-    insights = requests.get(insights_url).json()
+    if media_type == "VIDEO":
+        insights_url = f"{GRAPH_API}/{media_id}/insights?metric=plays&access_token={ACCESS_TOKEN}"
+        insights = requests.get(insights_url).json()
 
-    views = 0
-    if "data" in insights:
-        for item in insights["data"]:
-            if item.get("name") == "video_views":
-                views = item.get("values", [{}])[0].get("value", 0)
-    else:
-        print(f"⚠️ Nessun insight view per media {media_id}: {insights}")
-
+        if "data" in insights:
+            for item in insights["data"]:
+                if item.get("name") == "plays":
+                    views = item.get("values", [{}])[0].get("value", 0)
+        else:
+            print(f"⚠️ Nessun insight plays per media {media_id}: {insights}")
     return like_count, comment_count, views
 
-# INIZIO
 print("📥 Inizio fetch...")
 
 ig_user_id = get_ig_user_id()
@@ -70,8 +72,9 @@ views = []
 print("🔢 Calcolo metriche da post...")
 for media in media_items:
     media_id = media["id"]
+    media_type = media.get("media_type", "")
     try:
-        like, comment, view = get_media_metrics(media_id)
+        like, comment, view = get_media_metrics(media_id, media_type)
         likes.append(like)
         comments.append(comment)
         views.append(view)

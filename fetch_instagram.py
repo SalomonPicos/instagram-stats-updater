@@ -41,14 +41,17 @@ for media_id in media_ids:
         like_total += response.get("like_count", 0)
         comment_total += response.get("comments_count", 0)
 
-        insights = response.get("insights", {}).get("data", [])
-        reach_val = next((i["values"][0]["value"] for i in insights if i["name"] == "reach"), 0)
-        impressions_val = next((i["values"][0]["value"] for i in insights if i["name"] == "impressions"), 0)
+        insights = response.get("insights", {})
+        if "data" in insights and len(insights["data"]) >= 2:
+            reach_val = next((i["values"][0]["value"] for i in insights["data"] if i["name"] == "reach"), 0)
+            impressions_val = next((i["values"][0]["value"] for i in insights["data"] if i["name"] == "impressions"), 0)
 
-        reach_total += reach_val
-        impressions_total += impressions_val
+            reach_total += reach_val
+            impressions_total += impressions_val
+            post_count += 1
+        else:
+            print(f"⚠️ Media {media_id} non ha insights disponibili.")
 
-        post_count += 1
     except Exception as e:
         print(f"⚠️ Errore media {media_id}: {e}")
 

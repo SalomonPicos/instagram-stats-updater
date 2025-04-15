@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pytz
 from dateutil import parser
 
-print("\n🔧 Codice versione 6.7 con timezone Europe/Rome in esecuzione...")
+print("\n🔧 Codice versione 6.8 (media su ultimi 30 post) in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 PAGE_ID = os.environ.get("FB_PAGE_ID")
@@ -112,13 +112,10 @@ print(f"📦 Totale media trovati: {len(media_items)}")
 
 likes, comments, views, timestamps = [], [], [], []
 valid_posts = 0
-likes_30d = 0
-comments_30d = 0
-reach_30d = 0
 
 print("🔢 Calcolo metriche da post...")
-cutoff_date = datetime.now(pytz.timezone("Europe/Rome")) - timedelta(days=30)
 rome = pytz.timezone("Europe/Rome")
+last_30_engagement_rates = []
 
 for media in media_items:
     media_id = media["id"]
@@ -127,11 +124,9 @@ for media in media_items:
         if result is not None:
             like, comment, reach, timestamp = result
             post_date = parser.isoparse(timestamp).astimezone(rome).replace(tzinfo=None)
-            if post_date >= cutoff_date.replace(tzinfo=None):
-                print(f"✅ Post incluso nei 30 giorni: {post_date.strftime('%Y-%m-%d %H:%M:%S')} | {media_id}")
-                likes_30d += like
-                comments_30d += comment
-                reach_30d += reach
+            if reach > 0:
+                engagement = ((like + comment) / reach) * 100
+                last_30_engagement_rates.append(engagement)
             likes.append(like)
             comments.append(comment)
             views.append(reach)
@@ -146,8 +141,9 @@ avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
 
 engagement_rate = 0
-if reach_30d > 0:
-    engagement_rate = round(((likes_30d + comments_30d) / reach_30d) * 100, 2)
+if last_30_engagement_rates:
+    last_30 = last_30_engagement_rates[-30:] if len(last_30_engagement_rates) > 30 else last_30_engagement_rates
+    engagement_rate = round(sum(last_30) / len(last_30), 2)
 
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0

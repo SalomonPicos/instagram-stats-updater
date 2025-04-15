@@ -93,9 +93,11 @@ if current_data != data:  # Se i dati sono cambiati
     with open("stats.json", "w") as f:
         json.dump(data, f, indent=2)
 
-    print("📤 Git push in corso...")
+    # Configura il nome utente e la email per git
     os.system("git config --global user.email 'render@bot.com'")
     os.system("git config --global user.name 'Render Bot'")
+
+    print("📤 Git push in corso...")
     os.system("git add stats.json")
     os.system(f"git commit -m 'update all stats'")
     os.system("git push -f origin main")

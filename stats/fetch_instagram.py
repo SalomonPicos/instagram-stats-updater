@@ -4,8 +4,10 @@ import requests
 import json
 
 # === CONFIGURA QUI I TUOI DATI ===
-ACCESS_TOKEN = 'EAATkFxnlWFQBOZC5tRZBtdUB8XtSi7pqkipZCQNsOqtW55KcuxyWcMu382MRo4ZAU6B26oobVtfk5LGU5YAZAD8v5zozdFT5zyZAPbeMbdoegmzVZB4pXf0E7KyaBnWbdUKiNZAMZBK9o34juvI99PnmoqpI0oupoW86dDDZAZBq4mRzTXjOamAs2kfuyMfUAPY7Cqo'
-IG_USER_ID = '17841465161584303'
+import os
+ACCESS_TOKEN = os.getenv('IG_TOKEN')
+IG_USER_ID = os.getenv('IG_ID')
+
 
 # === URL DI BASE ===
 BASE_URL = f'https://graph.facebook.com/v17.0/{IG_USER_ID}'

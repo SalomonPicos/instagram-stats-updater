@@ -54,13 +54,17 @@ print("✅ Dati salvati in stats.json")
 import subprocess
 import os
 
+# Prendi token e username dalle variabili d'ambiente
 token = os.getenv("GITHUB_TOKEN")
+username = "SalomonPicos"  # <-- Cambia solo se diverso da quello del tuo GitHub
 
-# Configura il nome utente Git temporaneo
+# Setta le info git per Render
 subprocess.run('git config --global user.name "RenderBot"', shell=True)
 subprocess.run('git config --global user.email "render@bot.com"', shell=True)
 
-# Inizializza e forza push sul ramo main
+# Salva, committa e pusha direttamente su main
 subprocess.run('git add stats.json', shell=True)
 subprocess.run('git commit -m "update stats.json"', shell=True)
-subprocess.run(f'git push https://{token}@github.com/SalomonPicos/instagram-stats-updater.git HEAD:main', shell=True)
+
+# Pusha specificando esattamente URL + branch
+push_url = f'https://{token}@github.com/SalomonPicos/instagram-stats_

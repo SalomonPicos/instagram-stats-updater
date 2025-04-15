@@ -29,25 +29,28 @@ def get_media(ig_user_id):
     res = requests.get(url).json()
     return res.get("data", [])
 
-def get_media_metrics(media_id):
+def get_media_metrics(media_id, media_type):
     url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
 
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
 
-    insights_url = f"{GRAPH_API}/{media_id}/insights?metric=ig_reels_aggregated_all_plays_count&access_token={ACCESS_TOKEN}"
-    insights = requests.get(insights_url).json()
-
     views = 0
-    if "data" in insights:
-        for item in insights["data"]:
-            if item.get("name") == "ig_reels_aggregated_all_plays_count":
-                views = item.get("values", [{}])[0].get("value", 0)
-    else:
-        print(f"⚠️ Nessun insight per media {media_id}: {insights}")
+
+    if media_type == "REEL":
+        insights_url = f"{GRAPH_API}/{media_id}/insights?metric=ig_reels_aggregated_all_plays_count&access_token={ACCESS_TOKEN}"
+        insights = requests.get(insights_url).json()
+
+        if "data" in insights:
+            for item in insights["data"]:
+                if item.get("name") == "ig_reels_aggregated_all_plays_count":
+                    views = item.get("values", [{}])[0].get("value", 0)
+        else:
+            print(f"⚠️ Nessun insight plays per media {media_id}: {insights}")
 
     return like_count, comment_count, views
+
 
 
 print("📥 Inizio fetch...")

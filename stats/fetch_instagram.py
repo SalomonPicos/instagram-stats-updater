@@ -48,3 +48,14 @@ with open('stats.json', 'w') as f:
     json.dump(data, f, indent=2)
 
 print("✅ Dati salvati in stats.json")
+
+
+
+import subprocess
+
+subprocess.run('git config --global user.name "render-bot"', shell=True)
+subprocess.run('git config --global user.email "render@auto.com"', shell=True)
+subprocess.run('git pull origin main', shell=True)  # Per sicurezza
+subprocess.run('git add stats.json', shell=True)
+subprocess.run('git commit -m "update stats.json"', shell=True)
+subprocess.run('git push https://$GITHUB_TOKEN@github.com/tuo-username/instagram-stats-updater.git', shell=True)

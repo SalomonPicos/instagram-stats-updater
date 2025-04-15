@@ -15,13 +15,13 @@ headers = {
 
 # Step 1: Recupera followers
 print("✨ Recupero follower count...")
-user_url = f"https://graph.facebook.com/v19.0/{IG_USER_ID}?fields=followers_count&access_token={ACCESS_TOKEN}"
+user_url = f"https://graph.facebook.com/v22.0/{IG_USER_ID}?fields=followers_count&access_token={ACCESS_TOKEN}"
 user_data = requests.get(user_url).json()
 followers = user_data.get("followers_count", 0)
 
 # Step 2: Recupera media (fino a 100 post)
 print("📊 Recupero lista post...")
-media_url = f"https://graph.facebook.com/v19.0/{IG_USER_ID}/media?fields=id,caption&limit=100&access_token={ACCESS_TOKEN}"
+media_url = f"https://graph.facebook.com/v22.0/{IG_USER_ID}/media?fields=id,caption&limit=100&access_token={ACCESS_TOKEN}"
 media_data = requests.get(media_url).json()
 media_ids = [m["id"] for m in media_data.get("data", [])]
 
@@ -31,28 +31,19 @@ reach_total = 0
 impressions_total = 0
 post_count = 0
 
-# Step 3: Per ogni media recupera dati insights
+# Step 3: Per ogni media recupera dati
 print("🔢 Calcolo metriche da post...")
 for media_id in media_ids:
-    fields_url = f"https://graph.facebook.com/v19.0/{media_id}?fields=like_count,comments_count&access_token={ACCESS_TOKEN}"
-    insights_url = f"https://graph.facebook.com/v19.0/{media_id}/insights?metric=reach,impressions&access_token={ACCESS_TOKEN}"
-
-    fields_data = requests.get(fields_url).json()
-    insights_data = requests.get(insights_url).json()
+    fields_url = f"https://graph.facebook.com/v22.0/{media_id}?fields=like_count,comments_count,insights.metric(reach,impressions)&access_token={ACCESS_TOKEN}"
+    response = requests.get(fields_url).json()
 
     try:
-        like_total += fields_data.get("like_count", 0)
-        comment_total += fields_data.get("comments_count", 0)
+        like_total += response.get("like_count", 0)
+        comment_total += response.get("comments_count", 0)
 
-        if "data" in insights_data and len(insights_data["data"]) >= 2:
-            reach_val = insights_data["data"][0]["values"][0]["value"]
-            impressions_val = insights_data["data"][1]["values"][0]["value"]
-            reach_total += reach_val
-            impressions_total += impressions_val
-            post_count += 1
-        else:
-            print(f"⚠️ Skipping media {media_id}: no insights available.")
-
+        insights = response.get("insights", {}).get("data", [])
+        reach_val = next((i["values"][0]["value"] for i in insights if i["name"] == "reach"), 0)
+        impressions_val = next((i["values"][0]["value"] for i in insights if i["name"] == "impressions"), 0)
 
         reach_total += reach_val
         impressions_total += impressions_val
@@ -63,7 +54,7 @@ for media_id in media_ids:
 
 # Step 4: Recupera daily reach ultimi 7 giorni
 print("🕜 Recupero daily reach...")
-daily_url = f"https://graph.facebook.com/v19.0/{IG_USER_ID}/insights?metric=reach&period=day&access_token={ACCESS_TOKEN}"
+daily_url = f"https://graph.facebook.com/v22.0/{IG_USER_ID}/insights?metric=reach&period=day&access_token={ACCESS_TOKEN}"
 daily_data = requests.get(daily_url).json()
 daily_values = daily_data.get("data", [{}])[0].get("values", [])
 avg_daily_reach = int(sum(d["value"] for d in daily_values) / len(daily_values)) if daily_values else 0
@@ -99,5 +90,5 @@ subprocess.run('git config --global user.email "render@bot.com"', shell=True)
 subprocess.run('git add stats.json', shell=True)
 subprocess.run('git commit -m "update all stats"', shell=True)
 push_url = f'https://{GITHUB_TOKEN}@github.com/{USERNAME}/instagram-stats-updater.git'
-subprocess.run(f'git push {push_url} HEAD:main --force', shell=True)  
+subprocess.run(f'git push {push_url} HEAD:main --force', shell=True)
 print("🚀 Done!")

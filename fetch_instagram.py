@@ -64,6 +64,13 @@ def get_media_metrics(media_id):
 
     return like_count, comment_count, reach
 
+def format_short_number(value):
+    if value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}".rstrip("0").rstrip(".") + "m"
+    elif value >= 1_000:
+        return f"{value / 1_000:.1f}".rstrip("0").rstrip(".") + "k"
+    return str(value)
+
 print("📥 Inizio fetch...")
 
 ig_user_id = get_ig_user_id()
@@ -122,6 +129,7 @@ recent_reach = [
     if datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z") > cutoff_date
 ]
 average_daily_reach = round(sum(recent_reach) / 28) if recent_reach else 0
+formatted_daily_reach = format_short_number(average_daily_reach)
 
 total_impressions = sum(views)
 
@@ -134,7 +142,7 @@ data = {
     "avg_comments": avg_comments,
     "engagement_rate": f"{engagement_rate}%",
     "avg_reach": avg_reach,
-    "daily_reach": average_daily_reach,  # ✅ ora calcolato
+    "daily_reach": formatted_daily_reach,  # 👈 ora è in formato k/m
     "total_impressions": total_impressions
 }
 

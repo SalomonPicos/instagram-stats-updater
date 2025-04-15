@@ -28,15 +28,20 @@ def get_media_metrics(media_id):
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
 
-    insights_url = f"{GRAPH_API}/{media_id}/insights?metric=reach&access_token={ACCESS_TOKEN}"
+    # Recupera metriche aggiuntive
+    insight_metrics = "reach,impressions,likes,comments,saved,shares,video_views"
+    insights_url = f"{GRAPH_API}/{media_id}/insights?metric={insight_metrics}&access_token={ACCESS_TOKEN}"
     insights = requests.get(insights_url).json()
 
-    reach_data = insights.get("data", [])
     reach = 0
-    if reach_data and isinstance(reach_data, list):
-        reach = reach_data[0].get("values", [{}])[0].get("value", 0)
+    if "data" in insights:
+        for item in insights["data"]:
+            if item.get("name") == "reach":
+                reach = item.get("values", [{}])[0].get("value", 0)
+                break
 
     return like_count, comment_count, reach
+
 
 print("✨ Recupero follower count...")
 followers = get_followers()

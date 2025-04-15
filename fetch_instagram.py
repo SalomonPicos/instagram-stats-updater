@@ -3,8 +3,10 @@ import requests
 import json
 import os
 from datetime import datetime, timedelta
+import pytz
+from dateutil import parser
 
-print("\n🔧 Codice versione 6.6 in esecuzione...")
+print("\n🔧 Codice versione 6.7 con timezone Europe/Rome in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 PAGE_ID = os.environ.get("FB_PAGE_ID")
@@ -115,7 +117,8 @@ comments_30d = 0
 reach_30d = 0
 
 print("🔢 Calcolo metriche da post...")
-cutoff_date = datetime.now() - timedelta(days=30)
+cutoff_date = datetime.now(pytz.timezone("Europe/Rome")) - timedelta(days=30)
+rome = pytz.timezone("Europe/Rome")
 
 for media in media_items:
     media_id = media["id"]
@@ -123,8 +126,9 @@ for media in media_items:
         result = get_media_metrics(media_id)
         if result is not None:
             like, comment, reach, timestamp = result
-            post_date = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-            if post_date >= cutoff_date:
+            post_date = parser.isoparse(timestamp).astimezone(rome).replace(tzinfo=None)
+            if post_date >= cutoff_date.replace(tzinfo=None):
+                print(f"✅ Post incluso nei 30 giorni: {post_date.strftime('%Y-%m-%d %H:%M:%S')} | {media_id}")
                 likes_30d += like
                 comments_30d += comment
                 reach_30d += reach

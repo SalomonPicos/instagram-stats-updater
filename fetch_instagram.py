@@ -99,7 +99,13 @@ print(f"🔍 Prime 10 views: {views[:10]}")
 
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
-engagement_rate = round(((avg_likes + avg_comments) / followers) * 100, 2) if followers else 0
+engagement_rates = []
+for like, comment, reach in zip(likes, comments, views):
+    if reach > 0:
+        post_engagement = ((like + comment) / reach) * 100
+        engagement_rates.append(post_engagement)
+
+engagement_rate = round(sum(engagement_rates) / len(engagement_rates), 2) if engagement_rates else 0
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
 total_impressions = sum(views)

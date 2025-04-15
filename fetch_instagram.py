@@ -45,6 +45,7 @@ def get_media_metrics(media_id):
 
 
 
+
 print("✨ Recupero follower count...")
 followers = get_followers()
 

@@ -10,11 +10,11 @@ load_dotenv()
 
 print("\n🔧 fetch_tiktok.py avviato...")
 
-ms_token = os.environ.get("TIKTOK_TOKEN")
 USERNAME = "salomonpicos"
+ms_token = os.environ.get("TIKTOK_TOKEN")
 
 if not ms_token:
-    raise EnvironmentError("TIKTOK_TOKEN non definito nelle variabili ambiente")
+    raise EnvironmentError("❌ Variabile ambiente TIKTOK_TOKEN mancante")
 
 async def main():
     try:
@@ -22,7 +22,8 @@ async def main():
             await api.create_sessions(
                 ms_tokens=[ms_token],
                 num_sessions=1,
-                sleep_after=3
+                sleep_after=3,
+                headless=True
             )
 
             user = api.user(username=USERNAME)
@@ -32,38 +33,28 @@ async def main():
 
             user_info = await user.info()
             followers = user_info.user_info.stats.follower_count
-            print(f"👥 Followers: {followers}")
 
-            total_views, total_likes, total_comments = 0, 0, 0
-            daily_views = []
+            total_views = total_likes = total_comments = 0
             views_last_28d = 0
             now = datetime.now()
 
             for video in videos:
-                stats = video.as_dict["stats"]
-                create_time = datetime.fromtimestamp(video.as_dict["createTime"])
+                stats = video.as_dict.get("stats", {})
+                create_time = datetime.fromtimestamp(video.as_dict.get("createTime", 0))
 
-                views = stats["playCount"]
-                likes = stats["diggCount"]
-                comments = stats["commentCount"]
-
-                total_views += views
-                total_likes += likes
-                total_comments += comments
+                total_views += stats.get("playCount", 0)
+                total_likes += stats.get("diggCount", 0)
+                total_comments += stats.get("commentCount", 0)
 
                 if now - create_time <= timedelta(days=28):
-                    views_last_28d += views
-                    daily_views.append((create_time.date(), views))
+                    views_last_28d += stats.get("playCount", 0)
 
             total_posts = len(videos)
             avg_views = round(total_views / total_posts, 1) if total_posts else 0
             avg_likes = round(total_likes / total_posts, 1) if total_posts else 0
             avg_comments = round(total_comments / total_posts, 1) if total_posts else 0
 
-            engagement_rate = 0
-            if total_views > 0:
-                engagement_rate = round(((total_likes + total_comments) / total_views) * 100, 2)
-
+            engagement_rate = round(((total_likes + total_comments) / total_views) * 100, 2) if total_views else 0
             avg_daily_views = round(views_last_28d / 28) if views_last_28d else 0
 
             stats = {

@@ -23,8 +23,10 @@ async def main():
                 ms_tokens=[ms_token],
                 num_sessions=1,
                 sleep_after=3,
-                headless=True
-            )
+                headless=False,
+                browser="webkit"
+
+         )
 
             user = api.user(username=USERNAME)
             videos = [video async for video in user.videos(count=100)]

@@ -21,7 +21,6 @@ def get_media():
     return res.get("data", [])
 
 # Recupera like, commenti e reach per un singolo media
-
 def get_media_metrics(media_id):
     url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"
     res = requests.get(url).json()
@@ -42,9 +41,6 @@ def get_media_metrics(media_id):
         print(f"⚠️ Nessun insight per media {media_id} (type: {media_type}) → Response: {insights}")
 
     return like_count, comment_count, reach
-
-
-
 
 print("✨ Recupero follower count...")
 followers = get_followers()
@@ -75,6 +71,7 @@ avg_reach = round(sum(reaches) / len(reaches), 1) if reaches else 0
 print("🕜 Recupero daily reach...")
 daily_reach = "1.4m"  # per ora lasciamo fisso, si aggiornerà poi da insights totali se necessario
 
+# Dati da salvare in stats.json
 data = {
     "username": USERNAME,
     "followers": followers,
@@ -87,10 +84,11 @@ data = {
     "total_impressions": "20.1m"  # per ora statica
 }
 
+# Salvataggio delle statistiche nel file stats.json
+print("📝 Salvataggio delle statistiche in stats.json...")
 with open("stats.json", "w") as f:
     json.dump(data, f, indent=2)
-
-print("📂 stats.json aggiornato.")
+print("✅ Dati salvati in stats.json")
 
 # GIT PUSH AUTOMATICO (solo su Render con repo collegato)
 print("📤 Git push in corso...")

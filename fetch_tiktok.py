@@ -24,9 +24,8 @@ async def main():
                 num_sessions=1,
                 sleep_after=3,
                 headless=False,
-                browser="webkit"
-
-         )
+                browser_type="webkit"
+            )
 
             user = api.user(username=USERNAME)
             videos = [video async for video in user.videos(count=100)]
@@ -71,6 +70,9 @@ async def main():
                 "total_views": total_views,
                 "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
+
+            print("📊 Statistiche generate:")
+            print(json.dumps(stats, indent=2))
 
             with open("tiktok_stats.json", "w") as f:
                 json.dump(stats, f, indent=2)

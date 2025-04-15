@@ -29,19 +29,20 @@ def get_media_metrics(media_id):
     comment_count = res.get("comments_count", 0)
     media_type = res.get("media_type", "UNKNOWN")
 
-    # Solo reach per evitare errori su tipi non supportati
+    reach = 0
     insights_url = f"{GRAPH_API}/{media_id}/insights?metric=reach&access_token={ACCESS_TOKEN}"
     insights = requests.get(insights_url).json()
 
-    reach = 0
-    if "data" in insights:
+    # ✅ Evita crash se il campo "data" manca
+    if "data" in insights and isinstance(insights["data"], list):
         for item in insights["data"]:
             if item.get("name") == "reach":
                 reach = item.get("values", [{}])[0].get("value", 0)
     else:
-        print(f"❌ Media {media_id} (type: {media_type}) errore insights: {insights}")
+        print(f"⚠️ Nessun insight per media {media_id} (type: {media_type}) → Response: {insights}")
 
     return like_count, comment_count, reach
+
 
 
 
@@ -64,7 +65,7 @@ for media in media_items:
         comments.append(comment)
         reaches.append(reach)
     except Exception as e:
-        print(f"⚠️ Errore media {media_id}: {e}")
+        print(f"⚠️ Nessun insight per media {media_id}: {e}")
 
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0

@@ -57,6 +57,8 @@ followers = get_followers()
 
 print("📊 Recupero lista post...")
 media_items = get_media()
+print(f"📦 Totale media trovati: {len(media_items)}")  # 👈 debug per capire se ci sono post
+
 
 likes = []
 comments = []

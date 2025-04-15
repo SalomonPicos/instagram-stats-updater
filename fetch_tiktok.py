@@ -4,6 +4,7 @@ import json
 import asyncio
 from datetime import datetime, timedelta
 from TikTokApi import TikTokApi
+from TikTokApi.browser import browsers
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,7 +19,7 @@ if not ms_token:
 
 async def main():
     try:
-        async with TikTokApi(browser="chromium") as api:
+        async with TikTokApi(browsers.chromium.create()) as api:
             await api.create_sessions(
                 ms_tokens=[ms_token],
                 num_sessions=1,

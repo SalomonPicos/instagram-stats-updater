@@ -3,10 +3,18 @@ import json
 import os
 from datetime import datetime
 
+# Aggiungi il messaggio di debug per la versione del codice
+print("🔧 Codice versione 22 in esecuzione...")
+
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")  # imposta su Render come Secret
 BUSINESS_ACCOUNT_ID = os.environ.get("IG_BUSINESS_ID")  # imposta su Render come Secret
 USERNAME = "salomonpicos"
 GRAPH_API = "https://graph.facebook.com/v19.0"
+
+# Configura l'utente git per il commit
+print("🛠️ Configurazione Git...")
+os.system("git config --global user.email 'render@bot.com'")
+os.system("git config --global user.name 'Render Bot'")
 
 # Recupera il numero di follower
 def get_followers():
@@ -94,9 +102,6 @@ if current_data != data:  # Se i dati sono cambiati
         json.dump(data, f, indent=2)
 
     # Configura il nome utente e la email per git
-    os.system("git config --global user.email 'render@bot.com'")
-    os.system("git config --global user.name 'Render Bot'")
-
     print("📤 Git push in corso...")
     os.system("git add stats.json")
     os.system(f"git commit -m 'update all stats'")

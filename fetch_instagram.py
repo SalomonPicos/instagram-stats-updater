@@ -4,7 +4,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-print("\n🔧 Codice versione 6.5 in esecuzione...")
+print("\n🔧 Codice versione 6.6 in esecuzione...")
 
 ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 PAGE_ID = os.environ.get("FB_PAGE_ID")
@@ -52,10 +52,11 @@ def get_media(ig_user_id):
     return media
 
 def get_media_metrics(media_id):
-    url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type&access_token={ACCESS_TOKEN}"
+    url = f"{GRAPH_API}/{media_id}?fields=like_count,comments_count,media_type,timestamp&access_token={ACCESS_TOKEN}"
     res = safe_get(url)
     like_count = res.get("like_count", 0)
     comment_count = res.get("comments_count", 0)
+    timestamp = res.get("timestamp")
 
     reach = 0
     insights_url = f"{GRAPH_API}/{media_id}/insights?metric=reach&access_token={ACCESS_TOKEN}"
@@ -68,14 +69,14 @@ def get_media_metrics(media_id):
             return None
         else:
             print(f"⚠️ Nessun insight reach per media {media_id}: {json.dumps(error)}")
-            return 0, 0, 0
+            return 0, 0, 0, timestamp
 
     if "data" in insights:
         for item in insights["data"]:
             if item.get("name") == "reach":
                 reach = item.get("values", [{}])[0].get("value", 0)
 
-    return like_count, comment_count, reach
+    return like_count, comment_count, reach, timestamp
 
 def get_account_daily_reach(ig_user_id):
     since = (datetime.now() - timedelta(days=28)).date().isoformat()
@@ -109,30 +110,40 @@ print(f"📦 Totale media trovati: {len(media_items)}")
 
 likes, comments, views, timestamps = [], [], [], []
 valid_posts = 0
+likes_30d = 0
+comments_30d = 0
+reach_30d = 0
 
 print("🔢 Calcolo metriche da post...")
+cutoff_date = datetime.now() - timedelta(days=30)
+
 for media in media_items:
     media_id = media["id"]
     try:
         result = get_media_metrics(media_id)
         if result is not None:
-            like, comment, reach = result
+            like, comment, reach, timestamp = result
+            post_date = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            if post_date >= cutoff_date:
+                likes_30d += like
+                comments_30d += comment
+                reach_30d += reach
             likes.append(like)
             comments.append(comment)
             views.append(reach)
-            timestamps.append(media["timestamp"])
+            timestamps.append(timestamp)
             valid_posts += 1
     except Exception as e:
         print(f"⚠️ Errore media {media_id}: {e}")
 
 print(f"🪵 Views totali trovate: {sum(views)} su {valid_posts} post validi")
-print(f"🔍 Prime 10 views: {views[:10]}")
 
 avg_likes = round(sum(likes) / len(likes), 1) if likes else 0
 avg_comments = round(sum(comments) / len(comments), 1) if comments else 0
 
-engagement_rates = [((like + comment) / reach) * 100 for like, comment, reach in zip(likes, comments, views) if reach > 0]
-engagement_rate = round(sum(engagement_rates) / len(engagement_rates), 2) if engagement_rates else 0
+engagement_rate = 0
+if reach_30d > 0:
+    engagement_rate = round(((likes_30d + comments_30d) / reach_30d) * 100, 2)
 
 last_30_views = views[-30:] if len(views) >= 30 else views
 avg_reach = round(sum(last_30_views) / len(last_30_views), 1) if last_30_views else 0
